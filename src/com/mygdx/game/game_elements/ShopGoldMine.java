@@ -1,0 +1,84 @@
+package com.mygdx.game.game_elements;
+
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.mygdx.game.api.ClickEvent;
+import com.mygdx.game.api.GameButton;
+import com.mygdx.game.api.TextGame;
+import com.mygdx.game.paterns.fabric.AbstractFactory;
+import com.mygdx.game.paterns.fabric.Factory;
+import com.mygdx.game.paterns.fabric.TypeFactory;
+import com.mygdx.game.paterns.fabric.goldmine.TypeGoldMine;
+import com.mygdx.game.paterns.fabric.tower.TypeTower;
+import com.mygdx.game.scene.GameScene;
+
+public class ShopGoldMine {
+    private final int COUNT_PRODUCT = 1;
+    private final GameButton[] product = new GameButton[COUNT_PRODUCT];
+    private boolean visible = true;
+
+    public ShopGoldMine() {
+        for (int i = 0; i < product.length; i++) {
+            ClickEvent clickEvent = null;
+            final Factory factory = new AbstractFactory().createFactory(TypeFactory.GOLD_MINE);
+            final int[] price = new int[1];
+            Texture texture = null;
+
+            switch (i) {
+                case 0:
+                    price[0] = 200;
+                    texture = new Texture("sprites\\button\\icon5.png");
+                    clickEvent = new ClickEvent() {
+                        @Override
+                        public void click() {
+                            if(price[0] > InfoAboutPlayer.getMoneyInGame()) return;
+                            else InfoAboutPlayer.removeMoneyInGame(price[0]);
+                            if(GameScene.getCellGoldMine()[GameScene.getSelectSlotX()][GameScene.getSelectSlotY()] != null) return;
+                            GameScene.setGoldMine(factory.create(TypeGoldMine.USUALLY_MINE));
+                            visible = false;
+                        }
+                    };
+                    break;
+            }
+
+            product[i] = new GameButton();
+            product[i].createButton(texture, clickEvent,
+                    new TextGame(15, "" + price[0]));
+        }
+    }
+
+    public void draw(SpriteBatch batch) {
+        if(!this.visible) return;
+        for (int i = 0; i < product.length; i++) {
+
+            if(Integer.parseInt(product[i].getText().getDefaultText()) > InfoAboutPlayer.getMoneyInGame())
+                product[i].setUse(false);
+            else product[i].setUse(true);
+
+            product[i].draw(batch, Gdx.graphics.getWidth() - 90,
+                    Gdx.graphics.getHeight() - (90 * (i + 1)),
+                    70,
+                    70,
+                    38,
+                    15);
+        }
+    }
+    public GameButton[] getProduct() {
+        return this.product;
+    }
+
+    public boolean getVisible() {
+        return this.visible;
+    }
+
+    public void setVisible(boolean value) {
+        this.visible = value;
+    }
+
+    public void dispose() {
+        for(GameButton button : product) {
+            button.dispose();
+        }
+    }
+}
